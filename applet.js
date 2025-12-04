@@ -4,7 +4,7 @@
  * Displays real-time NVIDIA GPU statistics in the panel
  *
  * @author AI Agent
- * @version 0.5.1
+ * @version 0.5.2
  */
 
 // Import required Cinnamon modules

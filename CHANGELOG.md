@@ -112,6 +112,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Labels now receive temperature-based CSS classes on each refresh
 - Version bumped to 0.5.0 in applet.js
 
+## [0.5.2] - 2025-12-04
+
+### Added
+- **Line Spacing Control for 2x2 Layout** - Configurable spacing between rows
+  - New `lineSpacing` setting (0-10px, default: 4px)
+  - Adjustable via spinbutton in "Styling & Color Coding" section
+  - Allows tight (0-2px), normal (3-5px), or loose (6-10px) spacing
+  - Only affects two-row vertical layout
+- **Fixed-Width Column Alignment for 2x2 Layout** - Professional column layout
+  - GPU/TEMP aligned in left column (fixed 11-char width)
+  - MEM/FAN aligned in right column (consistent starting position)
+  - Eliminates horizontal shifting when values change (5% vs 100%)
+  - Perfect vertical alignment using String.padEnd() with monospace font
+  - Stable, easy-to-scan layout
+
+### Fixed
+- Vertical padding limit reduced from 20px to 11px to prevent panel expansion
+  - Higher values were causing taskbar to notch down
+  - Other applets (clock, etc.) were being pushed out of view
+  - Updated tooltip to warn about panel expansion risk
+- Temperature color now applies to both rows in 2x2 layout
+  - Previously only bottom row (TEMP/FAN) was colored
+  - Top row (GPU/MEM) remained white
+  - Both rows now display consistent temperature-based colors
+
+### Improved
+- Visual stability in 2x2 layout - no label jitter
+- Better readability with customizable line spacing
+- Professional appearance with column alignment
+
 ## [0.5.1] - 2025-12-04
 
 ### Added
