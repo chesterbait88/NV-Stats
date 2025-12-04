@@ -1,0 +1,43 @@
+# Compiled JavaScript
+*.js~
+*.swp
+*.swo
+
+# Cinnamon applet temporary files
+*~
+
+# Test outputs
+tests/*.log
+tests/test-results.txt
+
+# Local settings (don't commit user-specific settings)
+settings.json
+local-config.json
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (if using npm for testing)
+node_modules/
+
+# Build artifacts (if any)
+dist/
+build/
+
+# Generated documentation (if using doc generators)
+docs/generated/
