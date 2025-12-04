@@ -4,7 +4,7 @@
  * Displays real-time NVIDIA GPU statistics in the panel
  *
  * @author AI Agent
- * @version 0.2.0
+ * @version 0.3.0
  */
 
 // Import required Cinnamon modules
@@ -12,12 +12,18 @@ const Applet = imports.ui.applet;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const GLib = imports.gi.GLib;
+const St = imports.gi.St;
+const Settings = imports.ui.settings;
 
 // Debug mode - set to true for verbose logging
 const DEBUG_MODE = false;
 
 // Constants
 const REFRESH_INTERVAL_DEFAULT = 2; // seconds
+
+// Layout modes
+const LAYOUT_SINGLE_ROW = 'single-row';
+const LAYOUT_TWO_ROW = 'two-row';
 
 /**
  * NVIDIA SMI interface class
@@ -225,14 +231,109 @@ NvidiaSMI.prototype = {
 };
 
 /**
- * Main applet class extending TextApplet for text-based display
+ * Layout Manager class
+ * Handles formatting GPU stats for different layout modes
+ */
+function LayoutManager() {
+    this._init();
+}
+
+LayoutManager.prototype = {
+    /**
+     * Initialize the LayoutManager
+     */
+    _init: function() {
+        this.currentLayout = LAYOUT_SINGLE_ROW;
+        this._log("LayoutManager initialized with layout: " + this.currentLayout);
+    },
+
+    /**
+     * Set the current layout mode
+     * @param {string} layout - Layout mode (LAYOUT_SINGLE_ROW or LAYOUT_TWO_ROW)
+     */
+    setLayout: function(layout) {
+        if (layout !== LAYOUT_SINGLE_ROW && layout !== LAYOUT_TWO_ROW) {
+            this._logError("Invalid layout mode: " + layout);
+            return;
+        }
+        this.currentLayout = layout;
+        this._log("Layout changed to: " + layout);
+    },
+
+    /**
+     * Get the current layout mode
+     * @returns {string} Current layout mode
+     */
+    getLayout: function() {
+        return this.currentLayout;
+    },
+
+    /**
+     * Format stats for single-row display
+     * @param {Object} stats - {gpu: number, mem: number, temp: number, fan: number}
+     * @returns {string} Formatted string
+     */
+    formatSingleRow: function(stats) {
+        return "GPU: " + stats.gpu + "% | " +
+               "MEM: " + stats.mem + "% | " +
+               "TEMP: " + stats.temp + "°C | " +
+               "FAN: " + stats.fan + "%";
+    },
+
+    /**
+     * Format stats for two-row (2x2) display
+     * @param {Object} stats - {gpu: number, mem: number, temp: number, fan: number}
+     * @returns {Object} {row1: string, row2: string}
+     */
+    formatTwoRow: function(stats) {
+        return {
+            row1: "GPU: " + stats.gpu + "% MEM: " + stats.mem + "%",
+            row2: "TEMP: " + stats.temp + "°C FAN: " + stats.fan + "%"
+        };
+    },
+
+    /**
+     * Format stats according to current layout
+     * @param {Object} stats - GPU statistics
+     * @returns {Object|string} Formatted output (string for single-row, object for two-row)
+     */
+    format: function(stats) {
+        if (this.currentLayout === LAYOUT_TWO_ROW) {
+            return this.formatTwoRow(stats);
+        } else {
+            return this.formatSingleRow(stats);
+        }
+    },
+
+    /**
+     * Logging helper
+     * @param {string} message - Message to log
+     */
+    _log: function(message) {
+        if (DEBUG_MODE) {
+            global.log("[GPU Monitor] [LayoutManager] " + message);
+        }
+    },
+
+    /**
+     * Error logging helper
+     * @param {string} message - Error message
+     */
+    _logError: function(message) {
+        global.logError("[GPU Monitor] [LayoutManager] ERROR: " + message);
+    }
+};
+
+/**
+ * Main applet class
+ * Now extends base Applet (not TextApplet) to support custom widgets
  */
 function MyApplet(metadata, orientation, panel_height, instance_id) {
     this._init(metadata, orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
-    __proto__: Applet.TextApplet.prototype,
+    __proto__: Applet.Applet.prototype,
 
     /**
      * Initialize the applet
@@ -243,13 +344,28 @@ MyApplet.prototype = {
      * @param {Number} instance_id - Unique instance identifier
      */
     _init: function(metadata, orientation, panel_height, instance_id) {
-        Applet.TextApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+        Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
-        // Store metadata
+        // Store metadata and instance info
         this.metadata = metadata;
+        this.instance_id = instance_id;
+        this.orientation = orientation;
 
-        // Initialize NvidiaSMI interface
+        // Initialize settings
+        try {
+            this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
+            this.settings.bind("layout", "layoutMode", this._onLayoutChanged.bind(this));
+            this._log("Settings initialized successfully");
+        } catch (error) {
+            // If settings fail, use default layout
+            this.layoutMode = LAYOUT_SINGLE_ROW;
+            this._logError("Settings initialization failed, using defaults: " + error);
+        }
+
+        // Initialize components
         this.nvidiaSMI = new NvidiaSMI();
+        this.layoutManager = new LayoutManager();
+        this.layoutManager.setLayout(this.layoutMode || LAYOUT_SINGLE_ROW);
 
         // Timer state
         this._timerId = null;
@@ -259,14 +375,80 @@ MyApplet.prototype = {
         this._errorCount = 0;
         this._consecutiveErrors = 0;
 
-        // Set initial display text
-        this.set_applet_label("GPU: --");
+        // Create UI
+        this._createUI();
 
         // Set tooltip
         this.set_applet_tooltip("NVIDIA GPU Monitor\nInitializing...");
 
         // Log initialization
-        this._log("Applet initialized");
+        this._log("Applet initialized with layout: " + this.layoutMode);
+    },
+
+    /**
+     * Create the applet UI based on current layout
+     */
+    _createUI: function() {
+        // Remove old actor if exists
+        if (this.actor.get_child()) {
+            this.actor.get_child().destroy();
+        }
+
+        const layout = this.layoutManager.getLayout();
+
+        if (layout === LAYOUT_TWO_ROW) {
+            // Create vertical box for two-row layout
+            this._mainBox = new St.BoxLayout({
+                vertical: true,
+                style_class: 'gpu-monitor-box'
+            });
+
+            // Create two labels
+            this._label1 = new St.Label({
+                text: 'GPU: -- MEM: --',
+                style_class: 'gpu-monitor-label'
+            });
+            this._label2 = new St.Label({
+                text: 'TEMP: -- FAN: --',
+                style_class: 'gpu-monitor-label'
+            });
+
+            this._mainBox.add(this._label1);
+            this._mainBox.add(this._label2);
+            this.actor.add_actor(this._mainBox);
+
+            this._log("Created two-row UI");
+        } else {
+            // Create single label for single-row layout
+            this._mainBox = new St.BoxLayout({
+                vertical: false,
+                style_class: 'gpu-monitor-box'
+            });
+
+            this._label1 = new St.Label({
+                text: 'GPU: --',
+                style_class: 'gpu-monitor-label'
+            });
+
+            this._mainBox.add(this._label1);
+            this.actor.add_actor(this._mainBox);
+
+            // Clear second label reference
+            this._label2 = null;
+
+            this._log("Created single-row UI");
+        }
+    },
+
+    /**
+     * Called when layout setting changes
+     */
+    _onLayoutChanged: function() {
+        this._log("Layout changed to: " + this.layoutMode);
+        this.layoutManager.setLayout(this.layoutMode);
+        this._createUI();
+        // Force immediate update with current layout
+        this._update();
     },
 
     /**
@@ -359,14 +541,23 @@ MyApplet.prototype = {
      * @param {Object} stats - {gpu: number, mem: number, temp: number, fan: number}
      */
     _updateDisplay: function(stats) {
-        // Format: "GPU: 42% | MEM: 35% | TEMP: 55°C | FAN: 65%"
-        const label = "GPU: " + stats.gpu + "% | " +
-                      "MEM: " + stats.mem + "% | " +
-                      "TEMP: " + stats.temp + "°C | " +
-                      "FAN: " + stats.fan + "%";
+        const layout = this.layoutManager.getLayout();
+        const formatted = this.layoutManager.format(stats);
 
-        this.set_applet_label(label);
-        this._log("Display updated: " + label);
+        if (layout === LAYOUT_TWO_ROW) {
+            // Two-row layout
+            if (this._label1 && this._label2) {
+                this._label1.set_text(formatted.row1);
+                this._label2.set_text(formatted.row2);
+                this._log("Display updated (2-row): " + formatted.row1 + " / " + formatted.row2);
+            }
+        } else {
+            // Single-row layout
+            if (this._label1) {
+                this._label1.set_text(formatted);
+                this._log("Display updated (1-row): " + formatted);
+            }
+        }
     },
 
     /**
@@ -400,7 +591,19 @@ MyApplet.prototype = {
 
         // Update display to show error state
         if (this._consecutiveErrors === 1) {
-            this.set_applet_label("GPU: --");
+            const layout = this.layoutManager.getLayout();
+
+            if (layout === LAYOUT_TWO_ROW) {
+                if (this._label1 && this._label2) {
+                    this._label1.set_text("GPU: -- MEM: --");
+                    this._label2.set_text("TEMP: -- FAN: --");
+                }
+            } else {
+                if (this._label1) {
+                    this._label1.set_text("GPU: --");
+                }
+            }
+
             this.set_applet_tooltip("NVIDIA GPU Monitor\n\nError: " + reason + "\n\n" +
                                    "Check that:\n" +
                                    "- NVIDIA drivers are installed\n" +

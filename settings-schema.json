@@ -1,0 +1,12 @@
+{
+    "layout": {
+        "type": "combobox",
+        "default": "single-row",
+        "description": "Display Layout",
+        "options": {
+            "Single Row (Horizontal)": "single-row",
+            "Two Rows (2x2)": "two-row"
+        },
+        "tooltip": "Choose how GPU stats are displayed in the panel"
+    }
+}
