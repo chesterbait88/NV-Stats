@@ -758,7 +758,8 @@ MyApplet.prototype = {
             if (this._label1 && this._label2) {
                 this._label1.set_text(formatted.row1);
                 this._label2.set_text(formatted.row2);
-                // Apply temperature styling to the second row (which contains temp)
+                // Apply temperature styling to both rows
+                this._applyTemperatureStyle(this._label1, stats.temp);
                 this._applyTemperatureStyle(this._label2, stats.temp);
                 this._log("Display updated (2-row): " + formatted.row1 + " / " + formatted.row2);
             }
