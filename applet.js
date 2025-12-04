@@ -1,10 +1,13 @@
 /**
- * GPU Monitor Applet for Cinnamon
+ * NV-Stats - NVIDIA Statistics Monitor for Cinnamon
  *
- * Displays real-time NVIDIA GPU statistics in the panel
+ * A lightweight, highly customizable applet for monitoring NVIDIA GPU statistics
+ * Displays real-time GPU utilization, memory usage, temperature, and fan speed
  *
- * @author AI Agent
- * @version 0.5.2
+ * @author chesterbait88
+ * @contributors Claude Code (AI Assistant)
+ * @version 0.6.0
+ * @url https://github.com/chesterbait88/nv-stats
  */
 
 // Import required Cinnamon modules
@@ -219,7 +222,7 @@ NvidiaSMI.prototype = {
      */
     _log: function(message) {
         if (DEBUG_MODE) {
-            global.log("[GPU Monitor] [NvidiaSMI] " + message);
+            global.log("[NV-Stats] [NvidiaSMI] " + message);
         }
     },
 
@@ -228,7 +231,7 @@ NvidiaSMI.prototype = {
      * @param {string} message - Error message
      */
     _logError: function(message) {
-        global.logError("[GPU Monitor] [NvidiaSMI] ERROR: " + message);
+        global.logError("[NV-Stats] [NvidiaSMI] ERROR: " + message);
     }
 };
 
@@ -290,7 +293,7 @@ LayoutManager.prototype = {
     formatTwoRow: function(stats) {
         // Calculate fixed widths for left column alignment
         // Max width: "GPU: 100%" = 9 chars, "TEMP: 100°C" = 11 chars
-        const gpuStr = "GPU: " + stats.gpu + "%";
+        const gpuStr = "GPU : " + stats.gpu + "%";
         const tempStr = "TEMP: " + stats.temp + "°C";
 
         // Pad to consistent width (use the larger width for both: 11 chars)
@@ -323,7 +326,7 @@ LayoutManager.prototype = {
      */
     _log: function(message) {
         if (DEBUG_MODE) {
-            global.log("[GPU Monitor] [LayoutManager] " + message);
+            global.log("[NV-Stats] [LayoutManager] " + message);
         }
     },
 
@@ -332,7 +335,7 @@ LayoutManager.prototype = {
      * @param {string} message - Error message
      */
     _logError: function(message) {
-        global.logError("[GPU Monitor] [LayoutManager] ERROR: " + message);
+        global.logError("[NV-Stats] [LayoutManager] ERROR: " + message);
     }
 };
 
@@ -418,7 +421,7 @@ MyApplet.prototype = {
         this._createUI();
 
         // Set tooltip
-        this.set_applet_tooltip("NVIDIA GPU Monitor\nInitializing...");
+        this.set_applet_tooltip("NV-Stats\nInitializing...");
 
         // Ensure actor responds to events properly
         this.actor.set_reactive(true);
@@ -591,7 +594,7 @@ MyApplet.prototype = {
             // Create two labels with dynamic font size
             const fontSize = this.fontSize || 9;
             this._label1 = new St.Label({
-                text: 'GPU: -- MEM: --',
+                text: 'GPU : -- MEM: --',
                 style_class: 'gpu-monitor-label',
                 style: 'font-size: ' + fontSize + 'pt; font-family: monospace; padding: 1px 0px;'
             });
@@ -793,7 +796,7 @@ MyApplet.prototype = {
      * @param {Object} stats - GPU statistics
      */
     _updateTooltip: function(stats) {
-        const tooltip = "NVIDIA GPU Monitor\n\n" +
+        const tooltip = "NV-Stats - NVIDIA GPU Statistics\n\n" +
                        "GPU Utilization: " + stats.gpu + "%\n" +
                        "Memory Usage: " + stats.mem + "%\n" +
                        "Temperature: " + stats.temp + "°C\n" +
@@ -872,7 +875,7 @@ MyApplet.prototype = {
 
             if (layout === LAYOUT_TWO_ROW) {
                 if (this._label1 && this._label2) {
-                    this._label1.set_text("GPU: -- MEM: --");
+                    this._label1.set_text("GPU : -- MEM: --");
                     this._label2.set_text("TEMP: -- FAN: --");
                 }
             } else {
@@ -881,11 +884,12 @@ MyApplet.prototype = {
                 }
             }
 
-            this.set_applet_tooltip("NVIDIA GPU Monitor\n\nError: " + reason + "\n\n" +
+            this.set_applet_tooltip("NV-Stats\n\nError: " + reason + "\n\n" +
                                    "Check that:\n" +
                                    "- NVIDIA drivers are installed\n" +
                                    "- nvidia-smi command is available\n" +
-                                   "- You have permission to access GPU");
+                                   "- You have permission to access GPU\n\n" +
+                                   "Check logs: ~/.xsession-errors");
         }
     },
 
@@ -896,7 +900,7 @@ MyApplet.prototype = {
      */
     _log: function(message) {
         if (DEBUG_MODE) {
-            global.log("[GPU Monitor] " + message);
+            global.log("[NV-Stats] " + message);
         }
     },
 
@@ -906,7 +910,7 @@ MyApplet.prototype = {
      * @param {String} message - Error message to log
      */
     _logError: function(message) {
-        global.logError("[GPU Monitor] ERROR: " + message);
+        global.logError("[NV-Stats] ERROR: " + message);
     }
 };
 

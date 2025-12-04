@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the GPU Monitor Applet will be documented in this file.
+All notable changes to NV-Stats (formerly GPU Monitor Applet) will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,12 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned Features
-- Initial release with real-time GPU monitoring
-- Single-row and 2x2 layout modes
-- Configurable refresh intervals
-- Temperature color coding
-- Right-click context menu
-- Full test suite
+- Automated test suite enhancements
+- Additional documentation (DEVELOPMENT.md, ARCHITECTURE.md)
+- Support for multiple GPUs
+- AMD GPU support (if feasible)
+
+## [0.6.0] - 2025-12-04
+
+### Changed
+- **PROJECT REBRANDED to "NV-Stats"** - Formerly "GPU Monitor Applet"
+  - Professional, descriptive name that clearly indicates NVIDIA statistics
+  - Updated all user-facing text and documentation
+  - **UUID changed to NV-Stats@Chesterbait88** (from gpu-monitor@snatch)
+  - Note: Users with old UUID will need to reinstall (not backward compatible)
+- Enhanced About page with comprehensive information:
+  - GitHub repository link: https://github.com/chesterbait88/nv-stats
+  - Requirements checklist (NVIDIA GPU, drivers, nvidia-smi)
+  - Verification commands for troubleshooting
+  - Log file location (~/.xsession-errors)
+  - Direct link to issues page
+- Updated all log messages to use "[NV-Stats]" prefix
+- Updated all tooltips with new branding
+- UI refinement: Added space after "GPU" for perfect colon alignment
+  - "GPU :" and "TEMP:" colons now line up vertically
+  - Improved visual consistency in 2x2 layout
+
+### Added
+- Author credit: chesterbait88
+- Contributors credit: Claude Code (AI Assistant)
+- GitHub repository URL in all documentation
+- Enhanced metadata.json with comprehensive About information
 
 ## [0.0.1] - 2025-12-04
 

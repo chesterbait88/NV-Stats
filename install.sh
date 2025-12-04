@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# GPU Monitor Applet - Installation Script
+# NV-Stats - Installation Script
 #
+# NVIDIA Statistics Monitor for Cinnamon
 # This script installs the applet to the local Cinnamon applets directory
 # and can be run multiple times safely (idempotent)
 #
@@ -15,13 +16,14 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Applet information
-APPLET_UUID="gpu-monitor@snatch"
+APPLET_UUID="NV-Stats@Chesterbait88"
 APPLET_DIR="$HOME/.local/share/cinnamon/applets/$APPLET_UUID"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "================================"
-echo "GPU Monitor Applet - Installer"
-echo "================================"
+echo "========================================="
+echo "NV-Stats Installer"
+echo "NVIDIA Statistics Monitor for Cinnamon"
+echo "========================================="
 echo ""
 
 # Check if we're in the right directory
@@ -90,7 +92,7 @@ if [ -f "$APPLET_DIR/metadata.json" ] && [ -f "$APPLET_DIR/applet.js" ]; then
     echo "To add the applet to your panel:"
     echo "1. Right-click on your Cinnamon panel"
     echo "2. Select 'Applets'"
-    echo "3. Find 'GPU Monitor' in the list"
+    echo "3. Find 'NV-Stats' in the list"
     echo "4. Click the '+' button to add it"
     echo ""
     echo "Note: You may need to restart Cinnamon for changes to take effect."

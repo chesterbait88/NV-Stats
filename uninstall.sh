@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# GPU Monitor Applet - Uninstallation Script
+# NV-Stats - Uninstallation Script
 #
+# NVIDIA Statistics Monitor for Cinnamon
 # This script removes the applet from the Cinnamon applets directory
 # and can be run multiple times safely (idempotent)
 #
@@ -15,12 +16,13 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Applet information
-APPLET_UUID="gpu-monitor@snatch"
+APPLET_UUID="NV-Stats@Chesterbait88"
 APPLET_DIR="$HOME/.local/share/cinnamon/applets/$APPLET_UUID"
 
-echo "=================================="
-echo "GPU Monitor Applet - Uninstaller"
-echo "=================================="
+echo "========================================="
+echo "NV-Stats Uninstaller"
+echo "NVIDIA Statistics Monitor for Cinnamon"
+echo "========================================="
 echo ""
 
 # Check if applet is installed

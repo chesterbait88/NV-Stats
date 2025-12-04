@@ -1,7 +1,13 @@
 {
-    "uuid": "gpu-monitor@snatch",
-    "name": "GPU Monitor",
-    "description": "Display NVIDIA GPU stats: utilization, memory, temperature, and fan speed",
+    "uuid": "NV-Stats@Chesterbait88",
+    "name": "NV-Stats",
+    "description": "Real-time NVIDIA GPU statistics: utilization, memory, temperature, and fan speed",
     "icon": "video-display",
-    "max-instances": 1
+    "max-instances": 1,
+    "version": "0.6.0",
+    "author": "chesterbait88",
+    "url": "https://github.com/chesterbait88/nv-stats",
+    "website": "https://github.com/chesterbait88/nv-stats",
+    "contributors": "Claude Code (AI Assistant)",
+    "comments": "A lightweight, highly customizable Cinnamon applet for monitoring NVIDIA GPU statistics.\n\nREQUIREMENTS:\n- NVIDIA GPU with proprietary drivers\n- nvidia-smi command-line utility (included with NVIDIA drivers)\n- Cinnamon Desktop Environment 4.0+\n\nVERIFY REQUIREMENTS:\nRun 'which nvidia-smi' to check if nvidia-smi is installed.\nRun 'nvidia-smi dmon -c 1' to verify it's working.\n\nTROUBLESHOOTING:\nIf errors occur, check the log file at:\n~/.xsession-errors\n\nSearch for 'NV-Stats' or 'GPU Monitor' in the log:\ntail -100 ~/.xsession-errors | grep -i 'nv-stats'\n\nFor issues and support, visit:\nhttps://github.com/chesterbait88/nv-stats/issues"
 }

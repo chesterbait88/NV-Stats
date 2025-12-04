@@ -1,6 +1,11 @@
-# GPU Monitor Applet for Cinnamon
+# NV-Stats - NVIDIA Statistics Monitor for Cinnamon
 
 A lightweight, highly customizable Cinnamon taskbar applet for monitoring NVIDIA GPU statistics in real-time.
+
+**Repository:** https://github.com/chesterbait88/nv-stats
+**UUID:** NV-Stats@Chesterbait88
+**Author:** chesterbait88
+**Contributors:** Claude Code (AI Assistant)
 
 ## Features
 
@@ -89,7 +94,7 @@ nvidia-smi dmon -c 1
 3. **Add to panel:**
    - Right-click on your Cinnamon panel
    - Select **"Applets"**
-   - Find **"GPU Monitor"** in the list
+   - Find **"NV-Stats"** in the list
    - Click the **"+"** button to add it
 
 4. **Restart Cinnamon** (if needed):
@@ -207,7 +212,7 @@ which nvidia-smi
 nvidia-smi
 
 # Review applet logs
-tail -f ~/.xsession-errors | grep "GPU Monitor"
+tail -f ~/.xsession-errors | grep "NV-Stats"
 
 # If nvidia-smi exists but not found, add to PATH
 export PATH=$PATH:/usr/bin
@@ -258,14 +263,14 @@ nvidia-smi --query-gpu=fan.speed --format=csv,noheader,nounits
 **Check logs:**
 ```bash
 # View recent errors
-tail -100 ~/.xsession-errors | grep -A 5 "GPU Monitor"
+tail -100 ~/.xsession-errors | grep -A 5 "NV-Stats"
 
 # Watch for new errors
-tail -f ~/.xsession-errors | grep "GPU Monitor"
+tail -f ~/.xsession-errors | grep "NV-Stats"
 ```
 
 **Common issues:**
-- Corrupted settings: Remove `~/.cinnamon/configs/gpu-monitor@snatch/`
+- Corrupted settings: Remove `~/.cinnamon/configs/NV-Stats@Chesterbait88/`
 - Bad nvidia-smi output: Test commands manually
 - Cinnamon version incompatibility: Requires Cinnamon 4.0+
 
@@ -325,19 +330,22 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ## Credits
 
-- **Author:** AI Agent (Claude Code)
-- **Repository:** [GitHub URL]
+- **Author:** chesterbait88
+- **Contributors:** Claude Code (AI Assistant)
+- **Repository:** https://github.com/chesterbait88/nv-stats
 - **Cinnamon:** Linux Mint team
 - **nvidia-smi:** NVIDIA Corporation
 
 ## Support
 
-**Issues:** Report bugs or feature requests on GitHub Issues
+**Issues:** Report bugs or feature requests at https://github.com/chesterbait88/nv-stats/issues
 
 **Questions:** See troubleshooting section above or check existing issues
 
+**Log File Location:** `~/.xsession-errors` (search for "NV-Stats")
+
 ---
 
-**Version:** 0.5.2
+**Version:** 0.6.0
 **Last Updated:** 2025-12-04
-**Status:** Feature Complete (Phase 5)
+**Status:** Feature Complete & Rebranded
