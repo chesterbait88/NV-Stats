@@ -8,5 +8,17 @@
             "Two Rows (2x2)": "two-row"
         },
         "tooltip": "Choose how GPU stats are displayed in the panel"
+    },
+    "refreshInterval": {
+        "type": "combobox",
+        "default": 2,
+        "description": "Refresh Interval",
+        "options": {
+            "1 second": 1,
+            "2 seconds": 2,
+            "5 seconds": 5,
+            "10 seconds": 10
+        },
+        "tooltip": "How often to update GPU statistics"
     }
 }

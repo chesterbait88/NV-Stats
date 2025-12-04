@@ -4,7 +4,7 @@
  * Displays real-time NVIDIA GPU statistics in the panel
  *
  * @author AI Agent
- * @version 0.3.0
+ * @version 0.4.0
  */
 
 // Import required Cinnamon modules
@@ -14,12 +14,14 @@ const Mainloop = imports.mainloop;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Settings = imports.ui.settings;
+const PopupMenu = imports.ui.popupMenu;
 
 // Debug mode - set to true for verbose logging
 const DEBUG_MODE = false;
 
 // Constants
 const REFRESH_INTERVAL_DEFAULT = 2; // seconds
+const REFRESH_INTERVALS = [1, 2, 5, 10]; // Available refresh intervals in seconds
 
 // Layout modes
 const LAYOUT_SINGLE_ROW = 'single-row';
@@ -355,10 +357,12 @@ MyApplet.prototype = {
         try {
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
             this.settings.bind("layout", "layoutMode", this._onLayoutChanged.bind(this));
+            this.settings.bind("refreshInterval", "refreshInterval", this._onRefreshIntervalChanged.bind(this));
             this._log("Settings initialized successfully");
         } catch (error) {
-            // If settings fail, use default layout
+            // If settings fail, use defaults
             this.layoutMode = LAYOUT_SINGLE_ROW;
+            this.refreshInterval = REFRESH_INTERVAL_DEFAULT;
             this._logError("Settings initialization failed, using defaults: " + error);
         }
 
@@ -369,7 +373,9 @@ MyApplet.prototype = {
 
         // Timer state
         this._timerId = null;
-        this.refreshInterval = REFRESH_INTERVAL_DEFAULT;
+        if (!this.refreshInterval) {
+            this.refreshInterval = REFRESH_INTERVAL_DEFAULT;
+        }
 
         // Error tracking
         this._errorCount = 0;
@@ -381,9 +387,146 @@ MyApplet.prototype = {
         // Set tooltip
         this.set_applet_tooltip("NVIDIA GPU Monitor\nInitializing...");
 
+        // Ensure actor responds to events properly
+        this.actor.set_reactive(true);
+
+        // Create context menu items (will be called after parent is fully initialized)
+        // Delay slightly to ensure context menu is ready
+        Mainloop.idle_add(() => {
+            this._setupContextMenu();
+            return false;
+        });
+
         // Log initialization
         this._log("Applet initialized with layout: " + this.layoutMode);
     },
+
+    /**
+     * Set up the right-click context menu items
+     */
+    _setupContextMenu: function() {
+        // Add separator before our custom items
+        this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        // Layout section header
+        let layoutHeader = new PopupMenu.PopupMenuItem("Display Layout", { reactive: false });
+        this._applet_context_menu.addMenuItem(layoutHeader);
+
+        // Single-row layout option
+        this._singleRowItem = new PopupMenu.PopupMenuItem("  Single Row");
+        this._singleRowItem.connect('activate', () => {
+            this._onMenuLayoutChanged(LAYOUT_SINGLE_ROW);
+        });
+        this._applet_context_menu.addMenuItem(this._singleRowItem);
+
+        // Two-row layout option
+        this._twoRowItem = new PopupMenu.PopupMenuItem("  Two Rows (2x2)");
+        this._twoRowItem.connect('activate', () => {
+            this._onMenuLayoutChanged(LAYOUT_TWO_ROW);
+        });
+        this._applet_context_menu.addMenuItem(this._twoRowItem);
+
+        // Refresh interval section
+        this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        let refreshHeader = new PopupMenu.PopupMenuItem("Refresh Interval", { reactive: false });
+        this._applet_context_menu.addMenuItem(refreshHeader);
+
+        // Create refresh interval menu items
+        this._refreshItems = {};
+        for (let interval of REFRESH_INTERVALS) {
+            let item = new PopupMenu.PopupMenuItem("  " + interval + " second" + (interval > 1 ? "s" : ""));
+            item.connect('activate', () => {
+                this._onMenuRefreshChanged(interval);
+            });
+            this._applet_context_menu.addMenuItem(item);
+            this._refreshItems[interval] = item;
+        }
+
+        // Update menu to show current selections
+        this._updateMenuStates();
+
+        this._log("Context menu items added");
+    },
+
+    /**
+     * Override to prevent left-click from doing anything
+     */
+    on_applet_clicked: function(event) {
+        // Do nothing on left-click
+        return false;
+    },
+
+    /**
+     * Update menu items to show current selections
+     */
+    _updateMenuStates: function() {
+        // Update layout indicators
+        const currentLayout = this.layoutManager.getLayout();
+        if (this._singleRowItem && this._twoRowItem) {
+            this._singleRowItem.setShowDot(currentLayout === LAYOUT_SINGLE_ROW);
+            this._twoRowItem.setShowDot(currentLayout === LAYOUT_TWO_ROW);
+        }
+
+        // Update refresh interval indicators
+        for (let interval in this._refreshItems) {
+            let item = this._refreshItems[interval];
+            item.setShowDot(parseInt(interval) === this.refreshInterval);
+        }
+
+        this._log("Menu states updated - Layout: " + currentLayout + ", Interval: " + this.refreshInterval);
+    },
+
+    /**
+     * Handle layout change from context menu
+     */
+    _onMenuLayoutChanged: function(newLayout) {
+        this._log("Menu: Layout changed to " + newLayout);
+
+        // Update layout mode
+        this.layoutMode = newLayout;
+
+        // Update layout manager
+        this.layoutManager.setLayout(newLayout);
+
+        // Recreate UI with new layout
+        this._createUI();
+
+        // Force immediate update
+        this._update();
+
+        // Save to settings
+        if (this.settings) {
+            try {
+                this.settings.setValue("layout", newLayout);
+            } catch (e) {
+                this._logError("Failed to save layout setting: " + e);
+            }
+        }
+
+        // Update menu dots
+        this._updateMenuStates();
+    },
+
+    /**
+     * Handle refresh interval change from context menu
+     */
+    _onMenuRefreshChanged: function(newInterval) {
+        this._log("Menu: Refresh interval changed to " + newInterval + "s");
+
+        this.refreshInterval = newInterval;
+
+        // Restart timer with new interval
+        this._stopTimer();
+        this._startTimer();
+
+        // Save to settings if available
+        if (this.settings) {
+            this.settings.setValue("refreshInterval", newInterval);
+        }
+
+        this._updateMenuStates();
+    },
+
 
     /**
      * Create the applet UI based on current layout
@@ -452,6 +595,26 @@ MyApplet.prototype = {
         this._createUI();
         // Force immediate update with current layout
         this._update();
+        // Update menu if it exists
+        if (this._applet_context_menu) {
+            this._updateMenuStates();
+        }
+    },
+
+    /**
+     * Called when refresh interval setting changes
+     */
+    _onRefreshIntervalChanged: function() {
+        this._log("Refresh interval changed to: " + this.refreshInterval + "s");
+        // Restart timer with new interval
+        if (this._timerId) {
+            this._stopTimer();
+            this._startTimer();
+        }
+        // Update menu if it exists
+        if (this._applet_context_menu) {
+            this._updateMenuStates();
+        }
     },
 
     /**
