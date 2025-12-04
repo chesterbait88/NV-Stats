@@ -71,6 +71,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated _updateDisplay() to handle both layout modes
 - Updated error handling for multi-label layouts
 
+## [0.4.0] - 2025-12-04
+
+### Added
+- Right-click context menu (Phase 4)
+- Layout selector in context menu (Single Row / Two Rows)
+- Refresh interval selector (1s / 2s / 5s / 10s)
+- Visual dot indicators for current selections
+- Refresh interval added to settings-schema.json
+- PopupMenu integration with built-in context menu
+- Menu items persist selections across restarts
+
+### Fixed
+- Menu appearing on left-click instead of right-click
+- Layout selector not triggering UI changes
+- Dot indicators not displaying correctly
+- Settings binding not updating layout properly
+
 ---
 
 ## Version History Guide
