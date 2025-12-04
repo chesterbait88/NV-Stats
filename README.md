@@ -89,8 +89,8 @@ nvidia-smi dmon -c 1
 1. **Clone or download** the repository:
    ```bash
    cd ~/Documents
-   git clone <repository-url>
-   cd gpu-monitor@snatch
+   git clone https://github.com/chesterbait88/NV-Stats.git
+   cd NV-Stats
    ```
 
 2. **Run the installer:**
@@ -112,8 +112,8 @@ nvidia-smi dmon -c 1
 
 ```bash
 # Copy to Cinnamon applets directory
-mkdir -p ~/.local/share/cinnamon/applets/gpu-monitor@snatch
-cp -r * ~/.local/share/cinnamon/applets/gpu-monitor@snatch/
+mkdir -p ~/.local/share/cinnamon/applets/NV-Stats
+cp -r * ~/.local/share/cinnamon/applets/NV-Stats
 
 # Restart Cinnamon
 cinnamon --replace &
@@ -199,7 +199,7 @@ cd gpu-monitor@snatch
 
 ```bash
 # Remove applet directory
-rm -rf ~/.local/share/cinnamon/applets/gpu-monitor@snatch
+rm -rf ~/.local/share/cinnamon/applets/NV-Stats
 
 # Restart Cinnamon
 cinnamon --replace &
@@ -281,7 +281,7 @@ tail -f ~/.xsession-errors | grep "NV-Stats"
 ```
 
 **Common issues:**
-- Corrupted settings: Remove `~/.cinnamon/configs/NV-Stats@Chesterbait88/`
+- Corrupted settings: Remove `~/.cinnamon/configs/NV-Stats/`
 - Bad nvidia-smi output: Test commands manually
 - Cinnamon version incompatibility: Requires Cinnamon 4.0+
 
