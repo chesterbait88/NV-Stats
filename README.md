@@ -19,6 +19,9 @@ A lightweight, highly customizable Cinnamon taskbar applet for monitoring NVIDIA
 - **Single-Row Layout:** `GPU: 42% | MEM: 35% | TEMP: 55°C | FAN: 65%`
   - Compact horizontal display
   - Perfect for standard single-row panels
+
+![Single-Row Layout](media/Single.png)
+
 - **Two-Row (2x2) Layout:**
   ```
   GPU:  42%   MEM: 35%
@@ -28,6 +31,8 @@ A lightweight, highly customizable Cinnamon taskbar applet for monitoring NVIDIA
   - Perfect for multi-row taskbars
   - No label jitter - columns stay aligned
   - Configurable line spacing (0-10px)
+
+![Two-Row 2x2 Layout](media/2x2.png)
 
 ### Styling & Customization
 - **Temperature Color Coding:** Visual feedback based on GPU temperature
@@ -55,6 +60,8 @@ A lightweight, highly customizable Cinnamon taskbar applet for monitoring NVIDIA
   - Color picker for all states
   - Font and spacing controls
 - **Tooltip:** Hover for detailed statistics
+
+![Hover Tooltip](media/hover.png)
 
 ## Requirements
 
@@ -122,6 +129,8 @@ Right-click the applet to access:
 
 Current selections are marked with a dot (●) indicator.
 
+![Right-click Context Menu](media/right-click%20.png)
+
 ### Advanced Settings (Configure Menu)
 
 Right-click → **Configure** to access full customization:
@@ -143,6 +152,8 @@ Right-click → **Configure** to access full customization:
 - **Critical Color:** Choose color for high temperatures (default: red)
 
 **Note:** All settings apply in real-time without requiring Cinnamon restart.
+
+![Settings Panel](media/Settings.png)
 
 ## Usage Examples
 
