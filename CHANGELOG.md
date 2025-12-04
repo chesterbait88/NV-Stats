@@ -112,6 +112,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Labels now receive temperature-based CSS classes on each refresh
 - Version bumped to 0.5.0 in applet.js
 
+## [0.5.1] - 2025-12-04
+
+### Added
+- **Fully Configurable Styling System** - All styling parameters now accessible via Settings panel
+- Settings panel sections:
+  - **Styling & Color Coding**: Enable/disable color coding, font size (6-16pt), padding controls
+  - **Temperature Thresholds**: Configurable warning (50-95°C) and critical (60-100°C) thresholds
+  - **Temperature Colors**: Color pickers for normal, warning, and critical temperature colors
+- New configuration options in settings-schema.json:
+  - `enableColorCoding` (checkbox) - Toggle temperature-based colors on/off
+  - `fontSize` (spinbutton) - Adjust text size from 6-16pt
+  - `verticalPadding` (spinbutton) - Control vertical padding (0-20px)
+  - `horizontalPadding` (spinbutton) - Control horizontal padding (0-30px)
+  - `tempWarningThreshold` (spinbutton) - Set warning temperature threshold
+  - `tempCriticalThreshold` (spinbutton) - Set critical temperature threshold
+  - `colorNormal` (colorchooser) - Pick color for normal temperatures
+  - `colorWarning` (colorchooser) - Pick color for warning temperatures
+  - `colorCritical` (colorchooser) - Pick color for critical temperatures
+- _onStyleChanged() callback method for live updates when settings change
+- Dynamic inline styling system replacing static CSS classes
+- Real-time style updates without requiring Cinnamon restart
+
+### Changed
+- getTemperatureColor() now uses configurable thresholds instead of hardcoded values
+- _applyTemperatureStyle() now applies inline styles with user-selected colors
+- _createUI() now applies user-configured padding and font size to all UI elements
+- Settings initialization includes all styling defaults with fallback values
+- Version bumped to 0.5.1 in applet.js
+
+### Improved
+- Complete user control over all visual aspects through GUI settings
+- Live preview of styling changes without reloading
+- Better accessibility with customizable font sizes and colors
+- Flexible layout customization for different panel configurations
+
 ---
 
 ## Version History Guide

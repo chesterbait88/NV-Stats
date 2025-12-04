@@ -20,5 +20,103 @@
             "10 seconds": 10
         },
         "tooltip": "How often to update GPU statistics"
+    },
+
+    "header-styling": {
+        "type": "header",
+        "description": "Styling & Color Coding"
+    },
+
+    "enableColorCoding": {
+        "type": "checkbox",
+        "default": true,
+        "description": "Enable temperature color coding",
+        "tooltip": "Apply colors based on GPU temperature (green/yellow/red)"
+    },
+
+    "fontSize": {
+        "type": "spinbutton",
+        "default": 9,
+        "min": 6,
+        "max": 16,
+        "step": 1,
+        "units": "pt",
+        "description": "Font Size",
+        "tooltip": "Size of the text in the panel (6-16 pt)"
+    },
+
+    "verticalPadding": {
+        "type": "spinbutton",
+        "default": 2,
+        "min": 0,
+        "max": 20,
+        "step": 1,
+        "units": "px",
+        "description": "Vertical Padding",
+        "tooltip": "Padding above and below text (0-20 px)"
+    },
+
+    "horizontalPadding": {
+        "type": "spinbutton",
+        "default": 8,
+        "min": 0,
+        "max": 30,
+        "step": 2,
+        "units": "px",
+        "description": "Horizontal Padding",
+        "tooltip": "Padding on left and right sides (0-30 px)"
+    },
+
+    "header-temperatures": {
+        "type": "header",
+        "description": "Temperature Thresholds"
+    },
+
+    "tempWarningThreshold": {
+        "type": "spinbutton",
+        "default": 70,
+        "min": 50,
+        "max": 95,
+        "step": 5,
+        "units": "°C",
+        "description": "Warning Temperature",
+        "tooltip": "Temperature at which the warning color is applied (50-95°C)"
+    },
+
+    "tempCriticalThreshold": {
+        "type": "spinbutton",
+        "default": 85,
+        "min": 60,
+        "max": 100,
+        "step": 5,
+        "units": "°C",
+        "description": "Critical Temperature",
+        "tooltip": "Temperature at which the critical color is applied (60-100°C)"
+    },
+
+    "header-colors": {
+        "type": "header",
+        "description": "Temperature Colors"
+    },
+
+    "colorNormal": {
+        "type": "colorchooser",
+        "default": "rgba(74, 222, 128, 1.0)",
+        "description": "Normal Temperature Color",
+        "tooltip": "Color for temperatures below warning threshold (green by default)"
+    },
+
+    "colorWarning": {
+        "type": "colorchooser",
+        "default": "rgba(251, 191, 36, 1.0)",
+        "description": "Warning Temperature Color",
+        "tooltip": "Color for temperatures between warning and critical thresholds (yellow by default)"
+    },
+
+    "colorCritical": {
+        "type": "colorchooser",
+        "default": "rgba(239, 68, 68, 1.0)",
+        "description": "Critical Temperature Color",
+        "tooltip": "Color for temperatures above critical threshold (red by default)"
     }
 }

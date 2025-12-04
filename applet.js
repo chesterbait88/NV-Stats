@@ -4,7 +4,7 @@
  * Displays real-time NVIDIA GPU statistics in the panel
  *
  * @author AI Agent
- * @version 0.5.0
+ * @version 0.5.1
  */
 
 // Import required Cinnamon modules
@@ -358,11 +358,32 @@ MyApplet.prototype = {
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
             this.settings.bind("layout", "layoutMode", this._onLayoutChanged.bind(this));
             this.settings.bind("refreshInterval", "refreshInterval", this._onRefreshIntervalChanged.bind(this));
+
+            // Styling settings
+            this.settings.bind("enableColorCoding", "enableColorCoding", this._onStyleChanged.bind(this));
+            this.settings.bind("fontSize", "fontSize", this._onStyleChanged.bind(this));
+            this.settings.bind("verticalPadding", "verticalPadding", this._onStyleChanged.bind(this));
+            this.settings.bind("horizontalPadding", "horizontalPadding", this._onStyleChanged.bind(this));
+            this.settings.bind("tempWarningThreshold", "tempWarningThreshold", this._onStyleChanged.bind(this));
+            this.settings.bind("tempCriticalThreshold", "tempCriticalThreshold", this._onStyleChanged.bind(this));
+            this.settings.bind("colorNormal", "colorNormal", this._onStyleChanged.bind(this));
+            this.settings.bind("colorWarning", "colorWarning", this._onStyleChanged.bind(this));
+            this.settings.bind("colorCritical", "colorCritical", this._onStyleChanged.bind(this));
+
             this._log("Settings initialized successfully");
         } catch (error) {
             // If settings fail, use defaults
             this.layoutMode = LAYOUT_SINGLE_ROW;
             this.refreshInterval = REFRESH_INTERVAL_DEFAULT;
+            this.enableColorCoding = true;
+            this.fontSize = 9;
+            this.verticalPadding = 2;
+            this.horizontalPadding = 8;
+            this.tempWarningThreshold = 70;
+            this.tempCriticalThreshold = 85;
+            this.colorNormal = "rgba(74, 222, 128, 1.0)";
+            this.colorWarning = "rgba(251, 191, 36, 1.0)";
+            this.colorCritical = "rgba(239, 68, 68, 1.0)";
             this._logError("Settings initialization failed, using defaults: " + error);
         }
 
@@ -542,38 +563,49 @@ MyApplet.prototype = {
 
         const layout = this.layoutManager.getLayout();
 
+        // Get padding values
+        const vPad = (this.verticalPadding !== undefined) ? this.verticalPadding : 2;
+        const hPad = (this.horizontalPadding !== undefined) ? this.horizontalPadding : 8;
+
         if (layout === LAYOUT_TWO_ROW) {
             // Create vertical box for two-row layout
             this._mainBox = new St.BoxLayout({
                 vertical: true,
-                style_class: 'gpu-monitor-box'
+                style_class: 'gpu-monitor-box',
+                style: 'padding: ' + vPad + 'px ' + hPad + 'px;'
             });
 
-            // Create two labels
+            // Create two labels with dynamic font size
+            const fontSize = this.fontSize || 9;
             this._label1 = new St.Label({
                 text: 'GPU: -- MEM: --',
-                style_class: 'gpu-monitor-label'
+                style_class: 'gpu-monitor-label',
+                style: 'font-size: ' + fontSize + 'pt; font-family: monospace; padding: 1px 0px;'
             });
             this._label2 = new St.Label({
                 text: 'TEMP: -- FAN: --',
-                style_class: 'gpu-monitor-label'
+                style_class: 'gpu-monitor-label',
+                style: 'font-size: ' + fontSize + 'pt; font-family: monospace; padding: 1px 0px;'
             });
 
             this._mainBox.add(this._label1);
             this._mainBox.add(this._label2);
             this.actor.add_actor(this._mainBox);
 
-            this._log("Created two-row UI");
+            this._log("Created two-row UI with font size: " + fontSize + "pt, padding: " + vPad + "px " + hPad + "px");
         } else {
             // Create single label for single-row layout
             this._mainBox = new St.BoxLayout({
                 vertical: false,
-                style_class: 'gpu-monitor-box'
+                style_class: 'gpu-monitor-box',
+                style: 'padding: ' + vPad + 'px ' + hPad + 'px;'
             });
 
+            const fontSize = this.fontSize || 9;
             this._label1 = new St.Label({
                 text: 'GPU: --',
-                style_class: 'gpu-monitor-label'
+                style_class: 'gpu-monitor-label',
+                style: 'font-size: ' + fontSize + 'pt; font-family: monospace;'
             });
 
             this._mainBox.add(this._label1);
@@ -582,7 +614,7 @@ MyApplet.prototype = {
             // Clear second label reference
             this._label2 = null;
 
-            this._log("Created single-row UI");
+            this._log("Created single-row UI with font size: " + fontSize + "pt, padding: " + vPad + "px " + hPad + "px");
         }
     },
 
@@ -615,6 +647,17 @@ MyApplet.prototype = {
         if (this._applet_context_menu) {
             this._updateMenuStates();
         }
+    },
+
+    /**
+     * Called when any styling setting changes
+     */
+    _onStyleChanged: function() {
+        this._log("Styling settings changed - updating display");
+        // Recreate UI to apply font size changes
+        this._createUI();
+        // Force immediate update to apply new colors/thresholds
+        this._update();
     },
 
     /**
@@ -747,18 +790,22 @@ MyApplet.prototype = {
     },
 
     /**
-     * Get temperature-based CSS class for color coding
+     * Get temperature-based color for color coding
      *
      * @param {number} temp - Temperature in Celsius
-     * @returns {string} CSS class name for temperature color coding
+     * @returns {string} Color string (rgba format) for temperature
      */
     getTemperatureColor: function(temp) {
-        if (temp < 70) {
-            return 'gpu-temp-normal';
-        } else if (temp >= 70 && temp <= 85) {
-            return 'gpu-temp-warning';
+        // Get thresholds from settings (with defaults)
+        const warningThreshold = this.tempWarningThreshold || 70;
+        const criticalThreshold = this.tempCriticalThreshold || 85;
+
+        if (temp < warningThreshold) {
+            return this.colorNormal || "rgba(74, 222, 128, 1.0)";
+        } else if (temp >= warningThreshold && temp < criticalThreshold) {
+            return this.colorWarning || "rgba(251, 191, 36, 1.0)";
         } else {
-            return 'gpu-temp-critical';
+            return this.colorCritical || "rgba(239, 68, 68, 1.0)";
         }
     },
 
@@ -771,16 +818,25 @@ MyApplet.prototype = {
     _applyTemperatureStyle: function(label, temp) {
         if (!label) return;
 
-        // Remove all temperature classes
-        label.remove_style_class_name('gpu-temp-normal');
-        label.remove_style_class_name('gpu-temp-warning');
-        label.remove_style_class_name('gpu-temp-critical');
+        // Check if color coding is enabled
+        const colorCodingEnabled = (this.enableColorCoding !== undefined) ? this.enableColorCoding : true;
 
-        // Add current temperature class
-        const tempClass = this.getTemperatureColor(temp);
-        label.add_style_class_name(tempClass);
+        if (!colorCodingEnabled) {
+            // Reset to default color (white)
+            const fontSize = this.fontSize || 9;
+            label.set_style('font-size: ' + fontSize + 'pt; font-family: monospace; color: #ffffff;');
+            this._log("Color coding disabled - using default color");
+            return;
+        }
 
-        this._log("Applied temperature style: " + tempClass + " for " + temp + "°C");
+        // Get temperature color from settings
+        const tempColor = this.getTemperatureColor(temp);
+        const fontSize = this.fontSize || 9;
+
+        // Apply inline style with color
+        label.set_style('font-size: ' + fontSize + 'pt; font-family: monospace; color: ' + tempColor + ';');
+
+        this._log("Applied temperature color: " + tempColor + " for " + temp + "°C");
     },
 
     /**
