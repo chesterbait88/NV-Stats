@@ -37,6 +37,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JSDoc comments for all functions
 - Debug logging infrastructure
 
+## [0.2.0] - 2025-12-04
+
+### Added
+- Real-time NVIDIA GPU monitoring (Phase 2)
+- NvidiaSMI class for command execution and parsing
+- GPU utilization, memory usage, temperature, and fan speed display
+- Format: "GPU: 35% | MEM: 11% | TEMP: 43°C | FAN: 35%"
+- 2-second refresh interval with Mainloop timer
+- Detailed tooltip with all GPU statistics
+- Error handling for missing/failing nvidia-smi
+- Graceful fallback for unavailable GPU data
+- Unit tests for parser functions (tests/test-parser.js)
+- Mock nvidia-smi for testing without hardware (tests/mock-nvidia-smi.sh)
+- Consecutive error tracking to prevent log spam
+- Proper timer cleanup to prevent memory leaks
+
 ---
 
 ## Version History Guide
