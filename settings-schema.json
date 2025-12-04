@@ -49,11 +49,11 @@
         "type": "spinbutton",
         "default": 2,
         "min": 0,
-        "max": 20,
+        "max": 11,
         "step": 1,
         "units": "px",
         "description": "Vertical Padding",
-        "tooltip": "Padding above and below text (0-20 px)"
+        "tooltip": "Padding above and below text (0-11 px) - higher values may expand panel"
     },
 
     "horizontalPadding": {
