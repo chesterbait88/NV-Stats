@@ -1,0 +1,7 @@
+{
+    "uuid": "gpu-monitor@snatch",
+    "name": "GPU Monitor",
+    "description": "Display NVIDIA GPU stats: utilization, memory, temperature, and fan speed",
+    "icon": "video-display",
+    "max-instances": 1
+}
