@@ -4,7 +4,7 @@
  * Displays real-time NVIDIA GPU statistics in the panel
  *
  * @author AI Agent
- * @version 0.4.0
+ * @version 0.5.0
  */
 
 // Import required Cinnamon modules
@@ -715,12 +715,16 @@ MyApplet.prototype = {
             if (this._label1 && this._label2) {
                 this._label1.set_text(formatted.row1);
                 this._label2.set_text(formatted.row2);
+                // Apply temperature styling to the second row (which contains temp)
+                this._applyTemperatureStyle(this._label2, stats.temp);
                 this._log("Display updated (2-row): " + formatted.row1 + " / " + formatted.row2);
             }
         } else {
             // Single-row layout
             if (this._label1) {
                 this._label1.set_text(formatted);
+                // Apply temperature styling to the label
+                this._applyTemperatureStyle(this._label1, stats.temp);
                 this._log("Display updated (1-row): " + formatted);
             }
         }
@@ -740,6 +744,43 @@ MyApplet.prototype = {
                        "Refresh: " + this.refreshInterval + "s";
 
         this.set_applet_tooltip(tooltip);
+    },
+
+    /**
+     * Get temperature-based CSS class for color coding
+     *
+     * @param {number} temp - Temperature in Celsius
+     * @returns {string} CSS class name for temperature color coding
+     */
+    getTemperatureColor: function(temp) {
+        if (temp < 70) {
+            return 'gpu-temp-normal';
+        } else if (temp >= 70 && temp <= 85) {
+            return 'gpu-temp-warning';
+        } else {
+            return 'gpu-temp-critical';
+        }
+    },
+
+    /**
+     * Apply temperature-based styling to label
+     *
+     * @param {St.Label} label - Label to style
+     * @param {number} temp - Current temperature
+     */
+    _applyTemperatureStyle: function(label, temp) {
+        if (!label) return;
+
+        // Remove all temperature classes
+        label.remove_style_class_name('gpu-temp-normal');
+        label.remove_style_class_name('gpu-temp-warning');
+        label.remove_style_class_name('gpu-temp-critical');
+
+        // Add current temperature class
+        const tempClass = this.getTemperatureColor(temp);
+        label.add_style_class_name(tempClass);
+
+        this._log("Applied temperature style: " + tempClass + " for " + temp + "°C");
     },
 
     /**

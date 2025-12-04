@@ -88,6 +88,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dot indicators not displaying correctly
 - Settings binding not updating layout properly
 
+## [0.5.0] - 2025-12-04
+
+### Added
+- Professional stylesheet with custom CSS (Phase 5)
+- Temperature-based color coding system
+  - Normal (< 70°C): Green color (#4ade80)
+  - Warning (70-85°C): Amber/Yellow color (#fbbf24)
+  - Critical (> 85°C): Red color (#ef4444)
+- getTemperatureColor() method for dynamic color class selection
+- _applyTemperatureStyle() method for applying CSS classes to labels
+- Smooth color transitions (0.3s ease-in-out)
+- Text shadow for better readability on various backgrounds
+- Monospace font styling for consistent number alignment
+- Professional padding and spacing in layout boxes
+- Accessibility improvements (contrast ratios, font sizes)
+- Error state styling with italics and light red color
+- Support for missing/stale data display (grayed out text)
+- Maximum width constraint with text overflow handling
+
+### Changed
+- Updated _updateDisplay() to dynamically apply temperature styling
+- Labels now receive temperature-based CSS classes on each refresh
+- Version bumped to 0.5.0 in applet.js
+
 ---
 
 ## Version History Guide
