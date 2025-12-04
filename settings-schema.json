@@ -67,6 +67,17 @@
         "tooltip": "Padding on left and right sides (0-30 px)"
     },
 
+    "lineSpacing": {
+        "type": "spinbutton",
+        "default": 4,
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "units": "px",
+        "description": "Line Spacing (2x2 layout)",
+        "tooltip": "Space between the two rows in 2x2 layout (0-10 px)"
+    },
+
     "header-temperatures": {
         "type": "header",
         "description": "Temperature Thresholds"

@@ -364,6 +364,7 @@ MyApplet.prototype = {
             this.settings.bind("fontSize", "fontSize", this._onStyleChanged.bind(this));
             this.settings.bind("verticalPadding", "verticalPadding", this._onStyleChanged.bind(this));
             this.settings.bind("horizontalPadding", "horizontalPadding", this._onStyleChanged.bind(this));
+            this.settings.bind("lineSpacing", "lineSpacing", this._onStyleChanged.bind(this));
             this.settings.bind("tempWarningThreshold", "tempWarningThreshold", this._onStyleChanged.bind(this));
             this.settings.bind("tempCriticalThreshold", "tempCriticalThreshold", this._onStyleChanged.bind(this));
             this.settings.bind("colorNormal", "colorNormal", this._onStyleChanged.bind(this));
@@ -379,6 +380,7 @@ MyApplet.prototype = {
             this.fontSize = 9;
             this.verticalPadding = 2;
             this.horizontalPadding = 8;
+            this.lineSpacing = 4;
             this.tempWarningThreshold = 70;
             this.tempCriticalThreshold = 85;
             this.colorNormal = "rgba(74, 222, 128, 1.0)";
@@ -566,13 +568,14 @@ MyApplet.prototype = {
         // Get padding values
         const vPad = (this.verticalPadding !== undefined) ? this.verticalPadding : 2;
         const hPad = (this.horizontalPadding !== undefined) ? this.horizontalPadding : 8;
+        const lineSpace = (this.lineSpacing !== undefined) ? this.lineSpacing : 4;
 
         if (layout === LAYOUT_TWO_ROW) {
             // Create vertical box for two-row layout
             this._mainBox = new St.BoxLayout({
                 vertical: true,
                 style_class: 'gpu-monitor-box',
-                style: 'padding: ' + vPad + 'px ' + hPad + 'px;'
+                style: 'padding: ' + vPad + 'px ' + hPad + 'px; spacing: ' + lineSpace + 'px;'
             });
 
             // Create two labels with dynamic font size
@@ -592,7 +595,7 @@ MyApplet.prototype = {
             this._mainBox.add(this._label2);
             this.actor.add_actor(this._mainBox);
 
-            this._log("Created two-row UI with font size: " + fontSize + "pt, padding: " + vPad + "px " + hPad + "px");
+            this._log("Created two-row UI with font size: " + fontSize + "pt, padding: " + vPad + "px " + hPad + "px, spacing: " + lineSpace + "px");
         } else {
             // Create single label for single-row layout
             this._mainBox = new St.BoxLayout({
