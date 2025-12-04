@@ -24,6 +24,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Testing strategy
 - Git workflow documentation
 
+## [0.1.0] - 2025-12-04
+
+### Added
+- Basic applet structure (Phase 1)
+- metadata.json with applet configuration
+- applet.js with MyApplet class extending TextApplet
+- Static text display: "GPU Monitor"
+- Lifecycle methods for panel add/remove
+- install.sh installation script (idempotent)
+- uninstall.sh uninstallation script (idempotent)
+- JSDoc comments for all functions
+- Debug logging infrastructure
+
 ---
 
 ## Version History Guide
