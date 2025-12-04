@@ -389,9 +389,12 @@ MyApplet.prototype = {
      * Create the applet UI based on current layout
      */
     _createUI: function() {
-        // Remove old actor if exists
-        if (this.actor.get_child()) {
-            this.actor.get_child().destroy();
+        // Remove old widgets if they exist
+        if (this._mainBox) {
+            this._mainBox.destroy();
+            this._mainBox = null;
+            this._label1 = null;
+            this._label2 = null;
         }
 
         const layout = this.layoutManager.getLayout();
