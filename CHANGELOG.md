@@ -53,6 +53,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consecutive error tracking to prevent log spam
 - Proper timer cleanup to prevent memory leaks
 
+## [0.3.0] - 2025-12-04
+
+### Added
+- Dual layout system (Phase 3)
+- LayoutManager class for formatting stats in different layouts
+- Single-row layout: Horizontal display with pipes
+- Two-row (2x2) layout: Vertical display perfect for multi-row taskbars
+- Dynamic UI creation based on selected layout
+- Settings persistence via settings-schema.json
+- Layout switching recreates UI widgets automatically
+- St.BoxLayout and St.Label widgets for custom display
+- Settings panel: Configure → Display Layout dropdown
+
+### Changed
+- Migrated from TextApplet to base Applet for custom widget support
+- Updated _updateDisplay() to handle both layout modes
+- Updated error handling for multi-label layouts
+
 ---
 
 ## Version History Guide
