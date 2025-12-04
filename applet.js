@@ -283,14 +283,24 @@ LayoutManager.prototype = {
     },
 
     /**
-     * Format stats for two-row (2x2) display
+     * Format stats for two-row (2x2) display with fixed-width alignment
      * @param {Object} stats - {gpu: number, mem: number, temp: number, fan: number}
      * @returns {Object} {row1: string, row2: string}
      */
     formatTwoRow: function(stats) {
+        // Calculate fixed widths for left column alignment
+        // Max width: "GPU: 100%" = 9 chars, "TEMP: 100°C" = 11 chars
+        const gpuStr = "GPU: " + stats.gpu + "%";
+        const tempStr = "TEMP: " + stats.temp + "°C";
+
+        // Pad to consistent width (use the larger width for both: 11 chars)
+        const leftColWidth = 11;
+        const gpuPadded = gpuStr.padEnd(leftColWidth, ' ');
+        const tempPadded = tempStr.padEnd(leftColWidth, ' ');
+
         return {
-            row1: "GPU: " + stats.gpu + "% MEM: " + stats.mem + "%",
-            row2: "TEMP: " + stats.temp + "°C FAN: " + stats.fan + "%"
+            row1: gpuPadded + " MEM: " + stats.mem + "%",
+            row2: tempPadded + " FAN: " + stats.fan + "%"
         };
     },
 
