@@ -13,6 +13,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for multiple GPUs
 - AMD GPU support (if feasible)
 
+## [0.7.0] - 2025-12-04
+
+### Fixed
+- **CRITICAL: Video stuttering bug** - Converted nvidia-smi calls from synchronous to asynchronous
+  - Replaced `GLib.spawn_command_line_sync()` with `Util.spawn_async()`
+  - Eliminates main thread blocking (100-500ms) that caused YouTube video hitching
+  - Both dmon and fan speed queries now run asynchronously with callbacks
+  - Rewrote NvidiaSMI.getStats() to use callback pattern
+  - Significantly improved desktop responsiveness during GPU data collection
+
+### Added
+- **Label Style Selector:** Three display modes for different space requirements
+  - Full: `GPU: 42% | MEM: 35% | TEMP: 55°C | FAN: 65%` (default)
+  - Abbreviated: `G: 42% | M: 35% | T: 55°C | F: 65%` (space-saving)
+  - Ultra Compact: `G:42|M:35|T:55|F:65` (minimal, no units or spaces)
+- **Font Family Selector:** Choose from 10 different fonts
+  - Options: Monospace, DejaVu Sans Mono, Ubuntu Mono, Liberation Mono, Courier New, FreeMono, Courier, Noto Mono, Sans, Serif
+  - Perfect for matching your desktop theme or personal preference
+- **Bold Text Toggle:** Make all text bold for improved visibility
+- **Text Shadow Toggle:** Add shadow effect for better readability on busy backgrounds
+- **Item Spacing Control:** Adjust spacing around dividers (single-row) or between columns (2x2)
+  - Range: 0-5 spaces
+  - Allows for tighter or more spacious displays
+- **Background & Border Customization:**
+  - Optional semi-transparent background with color picker
+  - Optional border with customizable color and width (1-5px)
+  - Both support full RGBA color selection with transparency
+- **Settings Reorganization:** Improved settings panel layout
+  - Display Settings: Layout, refresh interval, label style
+  - Font Style: Size, bold, shadow, font family
+  - UI Spacing: Vertical/horizontal padding, line spacing, item spacing
+  - UI Color: Background and border customization
+  - Temperature Settings: Color coding, color pickers, thresholds
+
+### Changed
+- Updated LayoutManager to support three label styles with proper formatting
+- Enhanced _createUI() to build dynamic style strings for all new styling options
+- Updated _applyTemperatureStyle() to preserve bold/shadow when applying temperature colors
+- All new settings bound with real-time updates (no Cinnamon restart required)
+- Improved settings panel organization for better user experience
+
+### Technical
+- Added `Util` import for async subprocess execution
+- Converted all nvidia-smi command execution to asynchronous callbacks
+- Enhanced UI styling system with dynamic CSS generation
+- Maintained backward compatibility with existing settings
+
 ## [0.6.0] - 2025-12-04
 
 ### Changed

@@ -12,6 +12,7 @@ A lightweight, highly customizable Cinnamon taskbar applet for monitoring NVIDIA
 ### Core Monitoring
 - **Real-time GPU Statistics:** Utilization, memory usage, temperature, and fan speed
 - **Live Updates:** Configurable refresh intervals (1s, 2s, 5s, or 10s)
+- **Asynchronous Updates:** Non-blocking GPU data collection prevents UI stuttering
 - **Low Overhead:** Minimal resource usage (< 10MB memory, < 1% CPU)
 - **Error Handling:** Graceful fallbacks when nvidia-smi is unavailable
 
@@ -34,20 +35,35 @@ A lightweight, highly customizable Cinnamon taskbar applet for monitoring NVIDIA
 
 ![Two-Row 2x2 Layout](media/2x2.png)
 
+### Label Styles
+Choose from three label display modes:
+- **Full:** `GPU: 42% | MEM: 35% | TEMP: 55°C | FAN: 65%` (default)
+- **Abbreviated:** `G: 42% | M: 35% | T: 55°C | F: 65%` (space-saving)
+- **Ultra Compact:** `G:42|M:35|T:55|F:65` (minimal, no units)
+
 ### Styling & Customization
 - **Temperature Color Coding:** Visual feedback based on GPU temperature
   - Green: Normal (< 70°C by default)
   - Yellow/Amber: Warning (70-85°C by default)
   - Red: Critical (> 85°C by default)
   - Can be enabled/disabled in settings
-- **Fully Configurable:**
-  - Font size: 6-16pt (default: 9pt)
+- **Font Customization:**
+  - **Font Size:** 6-16pt (default: 9pt)
+  - **Font Family:** 10 options including Monospace, Ubuntu Mono, DejaVu Sans Mono, Courier New, FreeMono, and more
+  - **Bold Text:** Optional bold styling for better visibility
+  - **Text Shadow:** Optional shadow effect for improved readability on busy backgrounds
+- **Spacing Controls:**
+  - **Vertical Padding:** 0-11px (top/bottom spacing)
+  - **Horizontal Padding:** 0-30px (left/right spacing)
+  - **Line Spacing:** 0-10px (between rows in 2x2 layout)
+  - **Item Spacing:** 0-5 spaces (around dividers or between columns)
+- **Background & Border:**
+  - **Optional Background:** Add semi-transparent background with custom color
+  - **Optional Border:** Customizable border with color picker and width control (1-5px)
+- **Color Customization:**
   - Temperature thresholds: Customize warning and critical temperatures
   - Custom colors: Pick any color for normal/warning/critical states
-  - Padding controls: Adjust vertical (0-11px) and horizontal (0-30px) padding
-  - Line spacing: Control spacing between rows in 2x2 layout (0-10px)
 - **Real-time Updates:** All changes apply immediately without restart
-- **Monospace Font:** Consistent number alignment
 
 ### User Interface
 - **Context Menu (Right-click):**
@@ -135,21 +151,35 @@ Current selections are marked with a dot (●) indicator.
 
 Right-click → **Configure** to access full customization:
 
-#### Styling & Color Coding
-- **Enable temperature color coding:** Toggle color changes based on temperature
+#### Display Settings
+- **Label Style:** Choose Full, Abbreviated, or Ultra Compact display mode
+
+#### Font Style
 - **Font Size:** Adjust text size (6-16pt)
+- **Bold Text:** Make all text bold for better visibility
+- **Text Shadow:** Add shadow to text for readability on busy backgrounds
+- **Font Family:** Choose from 10 different fonts
+
+#### UI Spacing
 - **Vertical Padding:** Control top/bottom spacing (0-11px)
 - **Horizontal Padding:** Control left/right spacing (0-30px)
 - **Line Spacing:** Adjust spacing between rows in 2x2 layout (0-10px)
+- **Item Spacing:** Control spacing around dividers or between columns (0-5 spaces)
 
-#### Temperature Thresholds
-- **Warning Temperature:** Set when yellow color appears (50-95°C, default: 70°C)
-- **Critical Temperature:** Set when red color appears (60-100°C, default: 85°C)
+#### UI Color
+- **Enable Background:** Add optional background color with transparency
+- **Background Color:** Choose background color
+- **Enable Border:** Add optional border around applet
+- **Border Color:** Choose border color
+- **Border Width:** Set border thickness (1-5px)
 
-#### Temperature Colors
+#### Temperature Settings
+- **Enable temperature color coding:** Toggle color changes based on temperature
 - **Normal Color:** Choose color for safe temperatures (default: green)
 - **Warning Color:** Choose color for elevated temperatures (default: yellow)
 - **Critical Color:** Choose color for high temperatures (default: red)
+- **Warning Temperature:** Set when yellow color appears (50-95°C, default: 70°C)
+- **Critical Temperature:** Set when red color appears (60-100°C, default: 85°C)
 
 **Note:** All settings apply in real-time without requiring Cinnamon restart.
 
@@ -318,6 +348,8 @@ See [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) for details.
 - **CPU Usage:** < 1% (at 2s refresh)
 - **GPU Impact:** Negligible (nvidia-smi is lightweight)
 - **Network:** None (all local data)
+- **Asynchronous Execution:** Non-blocking nvidia-smi queries prevent video stuttering and UI freezes
+- **Optimized Updates:** Background data collection with callback-based UI updates
 
 ## Compatibility
 
@@ -357,6 +389,6 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ---
 
-**Version:** 0.6.0
+**Version:** 0.7.0
 **Last Updated:** 2025-12-04
-**Status:** Feature Complete & Rebranded
+**Status:** Production Ready - Enhanced Performance & Customization
