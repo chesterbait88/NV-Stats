@@ -22,16 +22,26 @@
         "tooltip": "How often to update GPU statistics"
     },
 
-    "header-styling": {
+    "header-display": {
         "type": "header",
-        "description": "Styling & Color Coding"
+        "description": "Display Settings"
     },
 
-    "enableColorCoding": {
-        "type": "checkbox",
-        "default": true,
-        "description": "Enable temperature color coding",
-        "tooltip": "Apply colors based on GPU temperature (green/yellow/red)"
+    "labelStyle": {
+        "type": "combobox",
+        "default": "full",
+        "description": "Label Style",
+        "options": {
+            "Full (GPU: 42%)": "full",
+            "Abbreviated (G: 42%)": "abbreviated",
+            "Ultra Compact (G:42)": "compact"
+        },
+        "tooltip": "Choose how labels and values are displayed"
+    },
+
+    "header-font-style": {
+        "type": "header",
+        "description": "Font Style"
     },
 
     "fontSize": {
@@ -43,6 +53,44 @@
         "units": "pt",
         "description": "Font Size",
         "tooltip": "Size of the text in the panel (6-16 pt)"
+    },
+
+    "boldText": {
+        "type": "checkbox",
+        "default": false,
+        "description": "Bold Text",
+        "tooltip": "Make all text bold for better visibility"
+    },
+
+    "textShadow": {
+        "type": "checkbox",
+        "default": false,
+        "description": "Text Shadow",
+        "tooltip": "Add shadow to text for better readability on busy backgrounds"
+    },
+
+    "fontFamily": {
+        "type": "combobox",
+        "default": "monospace",
+        "description": "Font Family",
+        "options": {
+            "Monospace (Default)": "monospace",
+            "DejaVu Sans Mono": "DejaVu Sans Mono",
+            "Ubuntu Mono": "Ubuntu Mono",
+            "Liberation Mono": "Liberation Mono",
+            "Courier New": "Courier New",
+            "FreeMono": "FreeMono",
+            "Courier": "Courier",
+            "Noto Mono": "Noto Mono",
+            "Sans": "sans-serif",
+            "Serif": "serif"
+        },
+        "tooltip": "Choose the font family for the display text"
+    },
+
+    "header-ui-spacing": {
+        "type": "header",
+        "description": "UI Spacing"
     },
 
     "verticalPadding": {
@@ -78,9 +126,92 @@
         "tooltip": "Space between the two rows in 2x2 layout (0-10 px)"
     },
 
-    "header-temperatures": {
+    "itemSpacing": {
+        "type": "spinbutton",
+        "default": 1,
+        "min": 0,
+        "max": 5,
+        "step": 1,
+        "units": "spaces",
+        "description": "Item Spacing",
+        "tooltip": "Spacing between items - Single-row: around | divider, 2x2: between columns (0-5 spaces)"
+    },
+
+    "header-ui-color": {
         "type": "header",
-        "description": "Temperature Thresholds"
+        "description": "UI Color"
+    },
+
+    "enableBackground": {
+        "type": "checkbox",
+        "default": false,
+        "description": "Enable Background",
+        "tooltip": "Add a background color behind the applet"
+    },
+
+    "backgroundColor": {
+        "type": "colorchooser",
+        "default": "rgba(0, 0, 0, 0.5)",
+        "description": "Background Color",
+        "tooltip": "Background color (supports transparency)"
+    },
+
+    "enableBorder": {
+        "type": "checkbox",
+        "default": false,
+        "description": "Enable Border",
+        "tooltip": "Add a border around the applet"
+    },
+
+    "borderColor": {
+        "type": "colorchooser",
+        "default": "rgba(255, 255, 255, 0.3)",
+        "description": "Border Color",
+        "tooltip": "Border color (supports transparency)"
+    },
+
+    "borderWidth": {
+        "type": "spinbutton",
+        "default": 1,
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "units": "px",
+        "description": "Border Width",
+        "tooltip": "Width of the border (1-5 px)"
+    },
+
+    "header-temperature": {
+        "type": "header",
+        "description": "Temperature Settings"
+    },
+
+    "enableColorCoding": {
+        "type": "checkbox",
+        "default": true,
+        "description": "Enable temperature color coding",
+        "tooltip": "Apply colors based on GPU temperature (green/yellow/red)"
+    },
+
+    "colorNormal": {
+        "type": "colorchooser",
+        "default": "rgba(74, 222, 128, 1.0)",
+        "description": "Normal Temperature Color",
+        "tooltip": "Color for temperatures below warning threshold (green by default)"
+    },
+
+    "colorWarning": {
+        "type": "colorchooser",
+        "default": "rgba(251, 191, 36, 1.0)",
+        "description": "Warning Temperature Color",
+        "tooltip": "Color for temperatures between warning and critical thresholds (yellow by default)"
+    },
+
+    "colorCritical": {
+        "type": "colorchooser",
+        "default": "rgba(239, 68, 68, 1.0)",
+        "description": "Critical Temperature Color",
+        "tooltip": "Color for temperatures above critical threshold (red by default)"
     },
 
     "tempWarningThreshold": {
@@ -103,31 +234,5 @@
         "units": "°C",
         "description": "Critical Temperature",
         "tooltip": "Temperature at which the critical color is applied (60-100°C)"
-    },
-
-    "header-colors": {
-        "type": "header",
-        "description": "Temperature Colors"
-    },
-
-    "colorNormal": {
-        "type": "colorchooser",
-        "default": "rgba(74, 222, 128, 1.0)",
-        "description": "Normal Temperature Color",
-        "tooltip": "Color for temperatures below warning threshold (green by default)"
-    },
-
-    "colorWarning": {
-        "type": "colorchooser",
-        "default": "rgba(251, 191, 36, 1.0)",
-        "description": "Warning Temperature Color",
-        "tooltip": "Color for temperatures between warning and critical thresholds (yellow by default)"
-    },
-
-    "colorCritical": {
-        "type": "colorchooser",
-        "default": "rgba(239, 68, 68, 1.0)",
-        "description": "Critical Temperature Color",
-        "tooltip": "Color for temperatures above critical threshold (red by default)"
     }
 }

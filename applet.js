@@ -18,6 +18,7 @@ const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Settings = imports.ui.settings;
 const PopupMenu = imports.ui.popupMenu;
+const Util = imports.misc.util;
 
 // Debug mode - set to true for verbose logging
 const DEBUG_MODE = false;
@@ -47,81 +48,74 @@ NvidiaSMI.prototype = {
     },
 
     /**
-     * Get GPU statistics
-     * @returns {Object|null} {gpu: number, mem: number, temp: number, fan: number} or null on error
+     * Get GPU statistics asynchronously
+     * @param {Function} callback - Called with (stats) where stats is {gpu, mem, temp, fan} or null
      */
-    getStats: function() {
-        try {
-            // Get GPU, memory, and temperature from dmon
-            const dmonData = this._executeDmon();
+    getStats: function(callback) {
+        // First get dmon data, then fan speed
+        this._executeDmon((dmonData) => {
             if (!dmonData) {
-                return null;
+                callback(null);
+                return;
             }
 
-            // Get fan speed separately
-            const fanSpeed = this._executeFanQuery();
-            if (fanSpeed === null) {
-                // Fan speed query failed, but we have other data
-                // Use 0 as fallback
-                dmonData.fan = 0;
-            } else {
-                dmonData.fan = fanSpeed;
-            }
+            // Now get fan speed
+            this._executeFanQuery((fanSpeed) => {
+                if (fanSpeed === null) {
+                    // Fan speed query failed, but we have other data
+                    // Use 0 as fallback
+                    dmonData.fan = 0;
+                } else {
+                    dmonData.fan = fanSpeed;
+                }
 
-            this._log("Stats retrieved: " + JSON.stringify(dmonData));
-            return dmonData;
-
-        } catch (error) {
-            this._logError("Failed to get stats: " + error);
-            return null;
-        }
+                this._log("Stats retrieved: " + JSON.stringify(dmonData));
+                callback(dmonData);
+            });
+        });
     },
 
     /**
-     * Execute nvidia-smi dmon command
-     * @returns {Object|null} {gpu: number, mem: number, temp: number} or null
+     * Execute nvidia-smi dmon command asynchronously
+     * @param {Function} callback - Called with parsed data or null
      */
-    _executeDmon: function() {
+    _executeDmon: function(callback) {
         try {
-            const [ok, stdout, stderr, exit_code] = GLib.spawn_command_line_sync(
-                'nvidia-smi dmon -s pum -c 1'
-            );
+            Util.spawn_async(['nvidia-smi', 'dmon', '-s', 'pum', '-c', '1'], (stdout) => {
+                if (!stdout) {
+                    this._logError("nvidia-smi dmon command failed");
+                    callback(null);
+                    return;
+                }
 
-            if (!ok || exit_code !== 0) {
-                this._logError("nvidia-smi dmon command failed");
-                return null;
-            }
-
-            const output = stdout.toString();
-            return this._parseDmonOutput(output);
-
+                const result = this._parseDmonOutput(stdout);
+                callback(result);
+            });
         } catch (error) {
             this._logError("Failed to execute nvidia-smi dmon: " + error);
-            return null;
+            callback(null);
         }
     },
 
     /**
-     * Execute nvidia-smi fan speed query
-     * @returns {number|null} Fan speed percentage or null
+     * Execute nvidia-smi fan speed query asynchronously
+     * @param {Function} callback - Called with fan speed or null
      */
-    _executeFanQuery: function() {
+    _executeFanQuery: function(callback) {
         try {
-            const [ok, stdout, stderr, exit_code] = GLib.spawn_command_line_sync(
-                'nvidia-smi --query-gpu=fan.speed --format=csv,noheader,nounits'
-            );
+            Util.spawn_async(['nvidia-smi', '--query-gpu=fan.speed', '--format=csv,noheader,nounits'], (stdout) => {
+                if (!stdout) {
+                    this._logError("nvidia-smi fan query failed");
+                    callback(null);
+                    return;
+                }
 
-            if (!ok || exit_code !== 0) {
-                this._logError("nvidia-smi fan query failed");
-                return null;
-            }
-
-            const output = stdout.toString();
-            return this._parseFanSpeed(output);
-
+                const result = this._parseFanSpeed(stdout);
+                callback(result);
+            });
         } catch (error) {
             this._logError("Failed to execute nvidia-smi fan query: " + error);
-            return null;
+            callback(null);
         }
     },
 
@@ -276,47 +270,104 @@ LayoutManager.prototype = {
     /**
      * Format stats for single-row display
      * @param {Object} stats - {gpu: number, mem: number, temp: number, fan: number}
+     * @param {number} itemSpacing - Number of spaces around the divider (default: 1)
+     * @param {string} labelStyle - Label style: "full", "abbreviated", or "compact" (default: "full")
      * @returns {string} Formatted string
      */
-    formatSingleRow: function(stats) {
-        return "GPU: " + stats.gpu + "% | " +
-               "MEM: " + stats.mem + "% | " +
-               "TEMP: " + stats.temp + "°C | " +
-               "FAN: " + stats.fan + "%";
+    formatSingleRow: function(stats, itemSpacing, labelStyle) {
+        const spacing = itemSpacing !== undefined ? itemSpacing : 1;
+        const style = labelStyle || "full";
+        const spacer = " ".repeat(spacing);
+        const divider = spacer + "|" + spacer;
+
+        if (style === "compact") {
+            // Ultra compact: G:42|M:35|T:55|F:65 (no spaces in divider for compact)
+            const compactDivider = "|";
+            return "G:" + stats.gpu + compactDivider +
+                   "M:" + stats.mem + compactDivider +
+                   "T:" + stats.temp + compactDivider +
+                   "F:" + stats.fan;
+        } else if (style === "abbreviated") {
+            // Abbreviated: G: 42% | M: 35% | T: 55°C | F: 65%
+            return "G: " + stats.gpu + "%" + divider +
+                   "M: " + stats.mem + "%" + divider +
+                   "T: " + stats.temp + "°C" + divider +
+                   "F: " + stats.fan + "%";
+        } else {
+            // Full: GPU: 42% | MEM: 35% | TEMP: 55°C | FAN: 65%
+            return "GPU: " + stats.gpu + "%" + divider +
+                   "MEM: " + stats.mem + "%" + divider +
+                   "TEMP: " + stats.temp + "°C" + divider +
+                   "FAN: " + stats.fan + "%";
+        }
     },
 
     /**
      * Format stats for two-row (2x2) display with fixed-width alignment
      * @param {Object} stats - {gpu: number, mem: number, temp: number, fan: number}
+     * @param {number} itemSpacing - Number of spaces between columns (default: 1)
+     * @param {string} labelStyle - Label style: "full", "abbreviated", or "compact" (default: "full")
      * @returns {Object} {row1: string, row2: string}
      */
-    formatTwoRow: function(stats) {
-        // Calculate fixed widths for left column alignment
-        // Max width: "GPU: 100%" = 9 chars, "TEMP: 100°C" = 11 chars
-        const gpuStr = "GPU : " + stats.gpu + "%";
-        const tempStr = "TEMP: " + stats.temp + "°C";
+    formatTwoRow: function(stats, itemSpacing, labelStyle) {
+        const spacing = itemSpacing !== undefined ? itemSpacing : 1;
+        const style = labelStyle || "full";
+        const columnGap = " ".repeat(spacing);
 
-        // Pad to consistent width (use the larger width for both: 11 chars)
-        const leftColWidth = 11;
-        const gpuPadded = gpuStr.padEnd(leftColWidth, ' ');
-        const tempPadded = tempStr.padEnd(leftColWidth, ' ');
+        if (style === "compact") {
+            // Ultra compact: G:42 M:35
+            //                T:55 F:65
+            const gpuStr = "G:" + stats.gpu;
+            const tempStr = "T:" + stats.temp;
+            const leftColWidth = 5; // "G:100" = 5 chars max
+            const gpuPadded = gpuStr.padEnd(leftColWidth, ' ');
+            const tempPadded = tempStr.padEnd(leftColWidth, ' ');
 
-        return {
-            row1: gpuPadded + " MEM: " + stats.mem + "%",
-            row2: tempPadded + " FAN: " + stats.fan + "%"
-        };
+            return {
+                row1: gpuPadded + columnGap + "M:" + stats.mem,
+                row2: tempPadded + columnGap + "F:" + stats.fan
+            };
+        } else if (style === "abbreviated") {
+            // Abbreviated: G : 42% M: 35%
+            //              T: 55°C F: 65%
+            const gpuStr = "G : " + stats.gpu + "%";
+            const tempStr = "T: " + stats.temp + "°C";
+            const leftColWidth = 9; // "T: 100°C" = 9 chars max
+            const gpuPadded = gpuStr.padEnd(leftColWidth, ' ');
+            const tempPadded = tempStr.padEnd(leftColWidth, ' ');
+
+            return {
+                row1: gpuPadded + columnGap + "M: " + stats.mem + "%",
+                row2: tempPadded + columnGap + "F: " + stats.fan + "%"
+            };
+        } else {
+            // Full: GPU : 42%  MEM: 35%
+            //       TEMP: 55°C FAN: 65%
+            const gpuStr = "GPU : " + stats.gpu + "%";
+            const tempStr = "TEMP: " + stats.temp + "°C";
+            const leftColWidth = 11; // "TEMP: 100°C" = 11 chars max
+            const gpuPadded = gpuStr.padEnd(leftColWidth, ' ');
+            const tempPadded = tempStr.padEnd(leftColWidth, ' ');
+
+            return {
+                row1: gpuPadded + columnGap + "MEM: " + stats.mem + "%",
+                row2: tempPadded + columnGap + "FAN: " + stats.fan + "%"
+            };
+        }
     },
 
     /**
      * Format stats according to current layout
      * @param {Object} stats - GPU statistics
+     * @param {number} itemSpacing - Number of spaces for item spacing
+     * @param {string} labelStyle - Label style: "full", "abbreviated", or "compact"
      * @returns {Object|string} Formatted output (string for single-row, object for two-row)
      */
-    format: function(stats) {
+    format: function(stats, itemSpacing, labelStyle) {
         if (this.currentLayout === LAYOUT_TWO_ROW) {
-            return this.formatTwoRow(stats);
+            return this.formatTwoRow(stats, itemSpacing, labelStyle);
         } else {
-            return this.formatSingleRow(stats);
+            return this.formatSingleRow(stats, itemSpacing, labelStyle);
         }
     },
 
@@ -375,9 +426,19 @@ MyApplet.prototype = {
             // Styling settings
             this.settings.bind("enableColorCoding", "enableColorCoding", this._onStyleChanged.bind(this));
             this.settings.bind("fontSize", "fontSize", this._onStyleChanged.bind(this));
+            this.settings.bind("fontFamily", "fontFamily", this._onStyleChanged.bind(this));
             this.settings.bind("verticalPadding", "verticalPadding", this._onStyleChanged.bind(this));
             this.settings.bind("horizontalPadding", "horizontalPadding", this._onStyleChanged.bind(this));
             this.settings.bind("lineSpacing", "lineSpacing", this._onStyleChanged.bind(this));
+            this.settings.bind("itemSpacing", "itemSpacing", this._onStyleChanged.bind(this));
+            this.settings.bind("boldText", "boldText", this._onStyleChanged.bind(this));
+            this.settings.bind("textShadow", "textShadow", this._onStyleChanged.bind(this));
+            this.settings.bind("labelStyle", "labelStyle", this._onStyleChanged.bind(this));
+            this.settings.bind("enableBackground", "enableBackground", this._onStyleChanged.bind(this));
+            this.settings.bind("backgroundColor", "backgroundColor", this._onStyleChanged.bind(this));
+            this.settings.bind("enableBorder", "enableBorder", this._onStyleChanged.bind(this));
+            this.settings.bind("borderColor", "borderColor", this._onStyleChanged.bind(this));
+            this.settings.bind("borderWidth", "borderWidth", this._onStyleChanged.bind(this));
             this.settings.bind("tempWarningThreshold", "tempWarningThreshold", this._onStyleChanged.bind(this));
             this.settings.bind("tempCriticalThreshold", "tempCriticalThreshold", this._onStyleChanged.bind(this));
             this.settings.bind("colorNormal", "colorNormal", this._onStyleChanged.bind(this));
@@ -391,9 +452,19 @@ MyApplet.prototype = {
             this.refreshInterval = REFRESH_INTERVAL_DEFAULT;
             this.enableColorCoding = true;
             this.fontSize = 9;
+            this.fontFamily = "monospace";
             this.verticalPadding = 2;
             this.horizontalPadding = 8;
             this.lineSpacing = 4;
+            this.itemSpacing = 1;
+            this.boldText = false;
+            this.textShadow = false;
+            this.labelStyle = "full";
+            this.enableBackground = false;
+            this.backgroundColor = "rgba(0, 0, 0, 0.5)";
+            this.enableBorder = false;
+            this.borderColor = "rgba(255, 255, 255, 0.3)";
+            this.borderWidth = 1;
             this.tempWarningThreshold = 70;
             this.tempCriticalThreshold = 85;
             this.colorNormal = "rgba(74, 222, 128, 1.0)";
@@ -583,25 +654,46 @@ MyApplet.prototype = {
         const hPad = (this.horizontalPadding !== undefined) ? this.horizontalPadding : 8;
         const lineSpace = (this.lineSpacing !== undefined) ? this.lineSpacing : 4;
 
+        // Build box style with optional background and border
+        let boxStyle = 'padding: ' + vPad + 'px ' + hPad + 'px;';
+        if (this.enableBackground) {
+            boxStyle += ' background-color: ' + (this.backgroundColor || 'rgba(0, 0, 0, 0.5)') + ';';
+        }
+        if (this.enableBorder) {
+            const borderWidth = this.borderWidth || 1;
+            const borderColor = this.borderColor || 'rgba(255, 255, 255, 0.3)';
+            boxStyle += ' border: ' + borderWidth + 'px solid ' + borderColor + '; border-radius: 3px;';
+        }
+
+        // Build text style with optional bold and shadow
+        const fontSize = this.fontSize || 9;
+        const fontFamily = this.fontFamily || 'monospace';
+        let textStyle = 'font-size: ' + fontSize + 'pt; font-family: ' + fontFamily + ';';
+        if (this.boldText) {
+            textStyle += ' font-weight: bold;';
+        }
+        if (this.textShadow) {
+            textStyle += ' text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);';
+        }
+
         if (layout === LAYOUT_TWO_ROW) {
             // Create vertical box for two-row layout
             this._mainBox = new St.BoxLayout({
                 vertical: true,
                 style_class: 'gpu-monitor-box',
-                style: 'padding: ' + vPad + 'px ' + hPad + 'px; spacing: ' + lineSpace + 'px;'
+                style: boxStyle + ' spacing: ' + lineSpace + 'px;'
             });
 
-            // Create two labels with dynamic font size
-            const fontSize = this.fontSize || 9;
+            // Create two labels with dynamic styling
             this._label1 = new St.Label({
                 text: 'GPU : -- MEM: --',
                 style_class: 'gpu-monitor-label',
-                style: 'font-size: ' + fontSize + 'pt; font-family: monospace; padding: 1px 0px;'
+                style: textStyle + ' padding: 1px 0px;'
             });
             this._label2 = new St.Label({
                 text: 'TEMP: -- FAN: --',
                 style_class: 'gpu-monitor-label',
-                style: 'font-size: ' + fontSize + 'pt; font-family: monospace; padding: 1px 0px;'
+                style: textStyle + ' padding: 1px 0px;'
             });
 
             this._mainBox.add(this._label1);
@@ -614,14 +706,13 @@ MyApplet.prototype = {
             this._mainBox = new St.BoxLayout({
                 vertical: false,
                 style_class: 'gpu-monitor-box',
-                style: 'padding: ' + vPad + 'px ' + hPad + 'px;'
+                style: boxStyle
             });
 
-            const fontSize = this.fontSize || 9;
             this._label1 = new St.Label({
                 text: 'GPU: --',
                 style_class: 'gpu-monitor-label',
-                style: 'font-size: ' + fontSize + 'pt; font-family: monospace;'
+                style: textStyle
             });
 
             this._mainBox.add(this._label1);
@@ -736,23 +827,23 @@ MyApplet.prototype = {
      */
     _update: function() {
         try {
-            // Get stats from nvidia-smi
-            const stats = this.nvidiaSMI.getStats();
+            // Get stats from nvidia-smi asynchronously
+            this.nvidiaSMI.getStats((stats) => {
+                if (stats === null) {
+                    // Error getting stats
+                    this._handleError("Failed to get GPU stats");
+                    return;
+                }
 
-            if (stats === null) {
-                // Error getting stats
-                this._handleError("Failed to get GPU stats");
-                return;
-            }
+                // Reset error counter on success
+                this._consecutiveErrors = 0;
 
-            // Reset error counter on success
-            this._consecutiveErrors = 0;
+                // Update display
+                this._updateDisplay(stats);
 
-            // Update display
-            this._updateDisplay(stats);
-
-            // Update tooltip
-            this._updateTooltip(stats);
+                // Update tooltip
+                this._updateTooltip(stats);
+            });
 
         } catch (error) {
             this._logError("Update error: " + error);
@@ -767,7 +858,9 @@ MyApplet.prototype = {
      */
     _updateDisplay: function(stats) {
         const layout = this.layoutManager.getLayout();
-        const formatted = this.layoutManager.format(stats);
+        const itemSpacing = (this.itemSpacing !== undefined) ? this.itemSpacing : 1;
+        const labelStyle = this.labelStyle || "full";
+        const formatted = this.layoutManager.format(stats, itemSpacing, labelStyle);
 
         if (layout === LAYOUT_TWO_ROW) {
             // Two-row layout
@@ -835,23 +928,36 @@ MyApplet.prototype = {
     _applyTemperatureStyle: function(label, temp) {
         if (!label) return;
 
+        // Build base text style
+        const fontSize = this.fontSize || 9;
+        const fontFamily = this.fontFamily || 'monospace';
+        let textStyle = 'font-size: ' + fontSize + 'pt; font-family: ' + fontFamily + ';';
+
+        // Add bold if enabled
+        if (this.boldText) {
+            textStyle += ' font-weight: bold;';
+        }
+
+        // Add text shadow if enabled
+        if (this.textShadow) {
+            textStyle += ' text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);';
+        }
+
         // Check if color coding is enabled
         const colorCodingEnabled = (this.enableColorCoding !== undefined) ? this.enableColorCoding : true;
 
         if (!colorCodingEnabled) {
             // Reset to default color (white)
-            const fontSize = this.fontSize || 9;
-            label.set_style('font-size: ' + fontSize + 'pt; font-family: monospace; color: #ffffff;');
+            textStyle += ' color: #ffffff;';
+            label.set_style(textStyle);
             this._log("Color coding disabled - using default color");
             return;
         }
 
-        // Get temperature color from settings
+        // Get temperature color from settings and apply
         const tempColor = this.getTemperatureColor(temp);
-        const fontSize = this.fontSize || 9;
-
-        // Apply inline style with color
-        label.set_style('font-size: ' + fontSize + 'pt; font-family: monospace; color: ' + tempColor + ';');
+        textStyle += ' color: ' + tempColor + ';';
+        label.set_style(textStyle);
 
         this._log("Applied temperature color: " + tempColor + " for " + temp + "°C");
     },
